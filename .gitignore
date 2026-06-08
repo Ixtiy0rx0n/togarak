@@ -1,0 +1,7 @@
+node_modules/
+Data/*.db
+Uploads/
+Img/
+.env
+.vscode/
+*.log

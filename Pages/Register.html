@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="uz" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ro'yxatdan o'tish</title>
+    <link rel="stylesheet" href="../main.css">
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+    <script src="https://cdn.jsdelivr.net/npm/tsparticles@2/tsparticles.bundle.min.js"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+        body { font-family: 'Inter', sans-serif; background-color: #121212; }
+        .header-bg { background-color: #0d1520; }
+        .input-field { width: 100%; background-color: #1a2234; border: 1px solid #374151; color: #fff; padding: 0.75rem 1rem; border-radius: 0.75rem; outline: none; }
+    </style>
+</head>
+<body data-root=".." class="text-gray-300 antialiased selection:bg-blue-500/30 selection:text-blue-200">
+    <div class="min-h-screen flex items-center justify-center px-6 py-10 relative overflow-hidden">
+        <div class="absolute top-10 right-10 w-64 h-64 bg-blue-600/10 rounded-full blur-3xl animate-float"></div>
+        <div class="absolute bottom-10 left-10 w-96 h-96 bg-purple-600/10 rounded-full blur-3xl animate-float" style="animation-delay: 2s;"></div>
+        <div id="weather-widget" class="absolute top-6 right-6 z-20 hidden md:block"></div>
+        <div class="w-full max-w-6xl bg-[#0d1520] border border-gray-800 rounded-3xl overflow-hidden shadow-2xl grid lg:grid-cols-2 relative z-10">
+            <div class="hidden lg:block relative border-r border-gray-800">
+                <img src="../register_bg.png" alt="Registration" class="absolute inset-0 w-full h-full object-cover opacity-70">
+                <div class="absolute inset-0 bg-gradient-to-t from-[#090e17] via-[#090e17]/40 to-transparent"></div>
+                <div class="relative p-12 h-full flex flex-col justify-end">
+                    <h2 class="text-3xl font-bold text-white mb-4">Kelajagingizni shu yerda boshlang</h2>
+                    <p class="text-gray-300">Tanlangan to'garak bo'yicha ro'yxatdan o'ting, keyin student panel orqali dars va topshiriqlarga kirasiz.</p>
+                </div>
+            </div>
+            <div class="p-8 md:p-12">
+                <a href="../index.html" class="text-sm text-blue-400">Bosh sahifaga qaytish</a>
+                <h1 class="text-3xl font-bold text-white mt-4 mb-2">Ro'yxatdan O'tish</h1>
+                <p class="text-gray-400 mb-8">Student akkaunt yaratish uchun quyidagi formani to'ldiring.</p>
+                <div id="successMsg" class="hidden border p-4 rounded-xl mb-5"></div>
+                <div id="errorMsg" class="hidden border p-4 rounded-xl mb-5"></div>
+                <form id="registerForm" class="space-y-5">
+                    <div class="grid md:grid-cols-2 gap-5">
+                        <input id="ism" required class="input-field" placeholder="Ism">
+                        <input id="familiya" required class="input-field" placeholder="Familiya">
+                    </div>
+                    <div class="grid md:grid-cols-2 gap-5">
+                        <input id="yosh" type="number" class="input-field" placeholder="Yosh">
+                        <input id="telefon" required class="input-field" placeholder="+998 90 123 45 67">
+                    </div>
+                    <input id="oqish_joyi" class="input-field" placeholder="Maktab yoki OTM">
+                    <select id="tanlangan_fan" class="input-field">
+                        <option>Matematika</option>
+                        <option>Informatika va Dasturlash</option>
+                        <option>Ingliz Tili</option>
+                        <option>Robototexnika</option>
+                        <option>IT va Dizayn</option>
+                    </select>
+                    <div class="grid md:grid-cols-2 gap-5">
+                        <input id="username" required class="input-field" placeholder="Login">
+                        <input id="password" type="password" required class="input-field" placeholder="Parol">
+                    </div>
+                    <button type="submit" class="w-full bg-blue-600 text-white font-bold py-3.5 rounded-xl hover:bg-blue-500 transition-all shadow-[0_0_15px_rgba(37,99,235,0.4)]">Jo'natish</button>
+                </form>
+            </div>
+        </div>
+    </div>
+    <script type="module" src="../dist/pages/register.js"></script>
+</body>
+</html>

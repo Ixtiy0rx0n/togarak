@@ -1,0 +1,41 @@
+[33mcommit 06fea7392001ef276183f61f1412b63ed2e6ddf5[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mmain[m[33m, [m[1;31morigin/main[m[33m)[m
+Author: Muxiddin-darkcode <muxiddin980002@gmail.com>
+Commit: Muxiddin-darkcode <muxiddin980002@gmail.com>
+
+    fix error
+
+[33mcommit 5a4777452c99f8a53441ff50d787c6971a418074[m
+Author: Muxiddin-darkcode <muxiddin980002@gmail.com>
+Commit: Muxiddin-darkcode <muxiddin980002@gmail.com>
+
+    add stats for admin panel and teacher
+
+[33mcommit 0164533620a39c666147ba238b831bfde585dfb8[m
+Author: Muxiddin-darkcode <muxiddin980002@gmail.com>
+Commit: Muxiddin-darkcode <muxiddin980002@gmail.com>
+
+    project created
+
+[33mcommit 0b4b62d37a0d5a81298d4c601f308a53a2913f46[m
+Author: Muxiddin-darkcode <muxiddin980002@gmail.com>
+Commit: Muxiddin-darkcode <muxiddin980002@gmail.com>
+
+    Added missing teachers table creation logic
+
+[33mcommit 9d3429fce23a1696b9e6fe522ded58851727389e[m
+Author: Muxiddin-darkcode <muxiddin980002@gmail.com>
+Commit: Muxiddin-darkcode <muxiddin980002@gmail.com>
+
+    Fixed sqlite3 deployment issue: downgraded to stable version and specified node engine
+
+[33mcommit adfd76b7071ebc9667794935cea14aa2de4ac2e3[m
+Author: Muxiddin-darkcode <muxiddin980002@gmail.com>
+Commit: Muxiddin-darkcode <muxiddin980002@gmail.com>
+
+    Prepared for deployment: replaced hardcoded URLs and added start script
+
+[33mcommit 83aedab3a005dd1918ca2008ff9e881cc126c3e6[m
+Author: Muxiddin-darkcode <muxiddin980002@gmail.com>
+Commit: Muxiddin-darkcode <muxiddin980002@gmail.com>
+
+    Initial commit with project structure and security improvements

@@ -1,0 +1,412 @@
+<!DOCTYPE html>
+<html lang="uz" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Panel — Tugarak.uz</title>
+    <meta name="description" content="Tugarak.uz boshqaruv paneli — to'garaklar, o'qituvchilar va o'quvchilarni boshqaring.">
+    <link rel="stylesheet" href="../main.css">
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.2/dist/chart.umd.min.js"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+        body { font-family: 'Inter', sans-serif; background-color: #0a0f1e; }
+        .sidebar-bg { background: linear-gradient(180deg, #0d1520 0%, #0a1228 100%); }
+        .input-field {
+            width: 100%;
+            background-color: #111827;
+            border: 1px solid #1f2937;
+            color: #f9fafb;
+            padding: 0.7rem 1rem;
+            border-radius: 0.6rem;
+            outline: none;
+            transition: border-color 0.2s;
+            font-size: 0.875rem;
+        }
+        .input-field:focus { border-color: #3b82f6; }
+        .panel-card {
+            background: #0d1520;
+            border: 1px solid #1f2937;
+            border-radius: 1rem;
+        }
+        .active-tab {
+            background: rgba(59,130,246,0.12);
+            color: #60a5fa;
+            border-color: rgba(59,130,246,0.25) !important;
+        }
+        /* Modal animation */
+        .modal-overlay {
+            animation: fadeIn 0.2s ease-out;
+        }
+        .modal-box {
+            animation: slideUp 0.25s cubic-bezier(0.16,1,0.3,1);
+        }
+        /* Scrollbar */
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: #0a0f1e; }
+        ::-webkit-scrollbar-thumb { background: #1e293b; border-radius: 3px; }
+        ::-webkit-scrollbar-thumb:hover { background: #334155; }
+        /* Stat cards */
+        .stat-card {
+            background: #0d1520;
+            border: 1px solid #1f2937;
+            border-radius: 1rem;
+            transition: border-color 0.2s, transform 0.2s;
+        }
+        .stat-card:hover { border-color: #3b82f6; transform: translateY(-2px); }
+        /* Progress bar */
+        .prog-bar-bg { background: #1e293b; border-radius: 99px; height: 6px; }
+        .prog-bar { border-radius: 99px; height: 6px; transition: width 0.8s cubic-bezier(0.16,1,0.3,1); }
+        /* Live clock */
+        #adminClock { font-variant-numeric: tabular-nums; }
+        /* Chart canvas */
+        .chart-wrap { position: relative; height: 220px; }
+    </style>
+</head>
+<body class="text-gray-300 antialiased">
+
+<!-- ── LOGIN ─────────────────────────────────────────────────────────────── -->
+<div id="loginSection" class="min-h-screen flex items-center justify-center p-6">
+    <div class="panel-card w-full max-w-sm p-8 shadow-2xl">
+        <div class="text-center mb-8">
+            <img src="../logo.png" alt="Logo" class="w-14 h-14 object-contain bg-white rounded-full p-1.5 mx-auto mb-4">
+            <h1 class="text-2xl font-bold text-white">Admin Panel</h1>
+            <p class="text-gray-500 text-sm mt-1">Tugarak.uz boshqaruv tizimi</p>
+        </div>
+        <div id="loginError" class="hidden border rounded-xl p-3 mb-4 text-sm"></div>
+        <form id="loginForm" class="space-y-4">
+            <input id="username" class="input-field" placeholder="Login" required autocomplete="username">
+            <input id="password" type="password" class="input-field" placeholder="Parol" required autocomplete="current-password">
+            <button type="submit" class="w-full bg-blue-600 text-white font-semibold py-3 rounded-xl hover:bg-blue-500 transition-colors">Kirish</button>
+        </form>
+    </div>
+</div>
+
+<!-- ── DASHBOARD ──────────────────────────────────────────────────────────── -->
+<div id="dashboardSection" class="hidden h-screen overflow-hidden flex">
+    <div id="weather-widget" class="absolute top-5 right-6 z-20 hidden md:block"></div>
+
+    <!-- Sidebar -->
+    <aside class="w-64 sidebar-bg border-r border-gray-800/60 hidden md:flex md:flex-col shrink-0">
+        <div class="p-5 border-b border-gray-800/60">
+            <a href="../index.html" class="flex items-center gap-3">
+                <img src="../logo.png" alt="GDPI" class="w-9 h-9 object-contain bg-white rounded-full p-1">
+                <span class="text-lg font-bold text-white">Tugarak.uz</span>
+            </a>
+        </div>
+        <nav class="flex-1 p-3 space-y-1 overflow-y-auto">
+            <button data-tab="overview" data-title="Umumiy ko'rinish" class="active-tab w-full text-left px-4 py-2.5 rounded-xl border border-transparent text-sm font-medium transition-all hover:bg-gray-800/50">
+                📊 Umumiy ko'rinish
+            </button>
+            <button data-tab="admins" data-title="Adminlar" class="w-full text-left px-4 py-2.5 rounded-xl border border-transparent text-sm font-medium transition-all hover:bg-gray-800/50">
+                🔐 Adminlar
+            </button>
+            <button data-tab="teachers" data-title="O'qituvchilar" class="w-full text-left px-4 py-2.5 rounded-xl border border-transparent text-sm font-medium transition-all hover:bg-gray-800/50">
+                👨‍🏫 O'qituvchilar
+            </button>
+            <button data-tab="students" data-title="O'quvchilar" class="w-full text-left px-4 py-2.5 rounded-xl border border-transparent text-sm font-medium transition-all hover:bg-gray-800/50">
+                🎓 O'quvchilar
+            </button>
+            <button data-tab="clubs" data-title="To'garaklar" class="w-full text-left px-4 py-2.5 rounded-xl border border-transparent text-sm font-medium transition-all hover:bg-gray-800/50">
+                🏫 To'garaklar
+            </button>
+            <button data-tab="groups" data-title="Guruhlar" class="w-full text-left px-4 py-2.5 rounded-xl border border-transparent text-sm font-medium transition-all hover:bg-gray-800/50">
+                📋 Guruhlar
+            </button>
+        </nav>
+        <div class="p-3 border-t border-gray-800/60">
+            <div class="px-4 py-2 mb-2 text-xs text-gray-500 truncate">👤 <span id="adminDisplayName">Admin</span></div>
+            <button id="logoutBtn" class="w-full text-red-400 bg-red-500/10 py-2.5 rounded-xl text-sm hover:bg-red-500/20 transition-colors">Chiqish</button>
+        </div>
+    </aside>
+
+    <!-- Main content -->
+    <main class="flex-1 flex flex-col overflow-hidden">
+        <header class="sidebar-bg border-b border-gray-800/60 px-6 py-4 flex items-center justify-between shrink-0">
+            <h2 id="pageTitle" class="text-lg font-bold text-white">Umumiy ko'rinish</h2>
+            <a href="../index.html" class="text-sm text-gray-500 hover:text-white transition-colors">← Saytga qaytish</a>
+        </header>
+        <div class="flex-1 overflow-y-auto p-6 space-y-6">
+
+            <!-- Overview tab -->
+            <section id="view-overview" class="view-panel space-y-6">
+
+                <!-- Top bar: Live clock + quick actions -->
+                <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+                    <div>
+                        <h3 class="text-xl font-bold text-white">Boshqaruv paneli</h3>
+                        <p class="text-gray-500 text-sm mt-0.5">Tugarak.uz tizimi umumiy ko'rinishi</p>
+                    </div>
+                
+                </div>
+                <div id="overviewMessage" class="hidden border rounded-xl p-3 text-sm"></div>
+
+                <!-- KPI stat cards — filled by JS -->
+                <div id="overviewStats" class="grid grid-cols-2 lg:grid-cols-4 gap-4"></div>
+
+            
+            </section>
+
+            <!-- Admins tab -->
+            <section id="view-admins" class="view-panel hidden space-y-4">
+                <div class="flex items-center justify-between">
+                    <h3 class="text-lg font-bold text-white">Adminlar</h3>
+                    <button id="openAdminModalBtn" class="bg-blue-600 text-white px-4 py-2 rounded-xl text-sm font-medium hover:bg-blue-500 transition-colors">+ Yangi admin</button>
+                </div>
+                <div class="panel-card overflow-hidden">
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left text-sm">
+                            <thead class="bg-gray-800/40 text-gray-400">
+                                <tr>
+                                    <th class="px-4 py-3 font-medium">ID</th>
+                                    <th class="px-4 py-3 font-medium">Ism</th>
+                                    <th class="px-4 py-3 font-medium">Login</th>
+                                    <th class="px-4 py-3 font-medium text-right">Amal</th>
+                                </tr>
+                            </thead>
+                            <tbody id="adminsTableBody"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Teachers tab -->
+            <section id="view-teachers" class="view-panel hidden space-y-4">
+                <div class="flex items-center justify-between">
+                    <h3 class="text-lg font-bold text-white">O'qituvchilar</h3>
+                    <button id="openTeacherModalBtn" class="bg-blue-600 text-white px-4 py-2 rounded-xl text-sm font-medium hover:bg-blue-500 transition-colors">+ Yangi o'qituvchi</button>
+                </div>
+                <div class="panel-card overflow-hidden">
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left text-sm">
+                            <thead class="bg-gray-800/40 text-gray-400">
+                                <tr>
+                                    <th class="px-4 py-3 font-medium">O'qituvchi</th>
+                                    <th class="px-4 py-3 font-medium">Fan</th>
+                                    <th class="px-4 py-3 font-medium">Telefon</th>
+                                    <th class="px-4 py-3 font-medium">Login</th>
+                                    <th class="px-4 py-3 font-medium text-right">Amal</th>
+                                </tr>
+                            </thead>
+                            <tbody id="teachersTableBody"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Students tab -->
+            <section id="view-students" class="view-panel hidden space-y-4">
+                <div class="flex items-center justify-between">
+                    <h3 class="text-lg font-bold text-white">O'quvchilar</h3>
+                    <span class="text-gray-500 text-sm">Ro'yxatdan o'tish sahifasi orqali yangi o'quvchi qo'shiladi</span>
+                </div>
+                <div class="panel-card overflow-hidden">
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left text-sm">
+                            <thead class="bg-gray-800/40 text-gray-400">
+                                <tr>
+                                    <th class="px-4 py-3 font-medium">O'quvchi</th>
+                                    <th class="px-4 py-3 font-medium">Telefon</th>
+                                    <th class="px-4 py-3 font-medium">O'qish joyi</th>
+                                    <th class="px-4 py-3 font-medium">Qiziqishi</th>
+                                    <th class="px-4 py-3 font-medium">Login</th>
+                                    <th class="px-4 py-3 font-medium text-right">Amal</th>
+                                </tr>
+                            </thead>
+                            <tbody id="studentsTableBody"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Clubs tab -->
+            <section id="view-clubs" class="view-panel hidden space-y-4">
+                <div class="flex items-center justify-between">
+                    <h3 class="text-lg font-bold text-white">To'garaklar</h3>
+                    <button id="openClubModalBtn" class="bg-blue-600 text-white px-4 py-2 rounded-xl text-sm font-medium hover:bg-blue-500 transition-colors">+ Yangi to'garak</button>
+                </div>
+                <div class="panel-card overflow-hidden">
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left text-sm">
+                            <thead class="bg-gray-800/40 text-gray-400">
+                                <tr>
+                                    <th class="px-4 py-3 font-medium">To'garak</th>
+                                    <th class="px-4 py-3 font-medium">O'qituvchi</th>
+                                    <th class="px-4 py-3 font-medium text-right">Amal</th>
+                                </tr>
+                            </thead>
+                            <tbody id="clubsTableBody"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Groups tab -->
+            <section id="view-groups" class="view-panel hidden space-y-4">
+                <div class="flex items-center justify-between">
+                    <h3 class="text-lg font-bold text-white">Guruhlar</h3>
+                    <button id="openGroupModalBtn" class="bg-blue-600 text-white px-4 py-2 rounded-xl text-sm font-medium hover:bg-blue-500 transition-colors">+ Yangi guruh</button>
+                </div>
+                <div class="panel-card overflow-hidden">
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left text-sm">
+                            <thead class="bg-gray-800/40 text-gray-400">
+                                <tr>
+                                    <th class="px-4 py-3 font-medium">Guruh</th>
+                                    <th class="px-4 py-3 font-medium">To'garak</th>
+                                    <th class="px-4 py-3 font-medium">O'qituvchi</th>
+                                    <th class="px-4 py-3 font-medium">Jadval</th>
+                                    <th class="px-4 py-3 font-medium text-center">O'quvchilar</th>
+                                    <th class="px-4 py-3 font-medium text-right">Amal</th>
+                                </tr>
+                            </thead>
+                            <tbody id="groupsTableBody"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+
+        </div>
+    </main>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════ MODALS ══════════ -->
+
+<!-- Admin Modal -->
+<div id="adminModal" class="modal-overlay hidden fixed inset-0 bg-black/70 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+    <div class="modal-box panel-card w-full max-w-md p-6">
+        <div class="flex items-center justify-between mb-5">
+            <h3 class="text-lg font-bold text-white">Yangi admin qo'shish</h3>
+            <button id="closeAdminModal" class="text-gray-500 hover:text-white transition-colors text-xl leading-none">&times;</button>
+        </div>
+        <div id="adminModalError" class="hidden border rounded-xl p-3 mb-4 text-sm"></div>
+        <form id="adminForm" class="space-y-3">
+            <input id="a_display_name" class="input-field" placeholder="Ko'rsatiladigan ism" required>
+            <input id="a_username" class="input-field" placeholder="Login" required autocomplete="off">
+            <input id="a_password" type="password" class="input-field" placeholder="Parol" required autocomplete="new-password">
+            <div class="flex gap-3 pt-2">
+                <button type="button" id="closeAdminModal2" onclick="document.getElementById('adminModal').classList.add('hidden')" class="flex-1 bg-gray-700 hover:bg-gray-600 py-2.5 rounded-xl text-white text-sm transition-colors">Bekor qilish</button>
+                <button type="submit" class="flex-1 bg-blue-600 hover:bg-blue-500 py-2.5 rounded-xl text-white text-sm font-semibold transition-colors">Saqlash</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Teacher Modal -->
+<div id="teacherModal" class="modal-overlay hidden fixed inset-0 bg-black/70 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+    <div class="modal-box panel-card w-full max-w-md p-6">
+        <div class="flex items-center justify-between mb-5">
+            <h3 id="teacherModalTitle" class="text-lg font-bold text-white">Yangi o'qituvchi</h3>
+            <button id="closeTeacherModal" class="text-gray-500 hover:text-white transition-colors text-xl leading-none">&times;</button>
+        </div>
+        <div id="teacherModalError" class="hidden border rounded-xl p-3 mb-4 text-sm"></div>
+        <form id="teacherForm" class="space-y-3">
+            <div class="grid grid-cols-2 gap-3">
+                <input id="t_first_name" class="input-field" placeholder="Ism" required autocomplete="off">
+                <input id="t_last_name" class="input-field" placeholder="Familiya" required autocomplete="off">
+            </div>
+            <input id="t_phone" class="input-field" placeholder="Telefon raqami" required>
+            <input id="t_subject" class="input-field" placeholder="O'qitiladigan fan" required>
+            <input id="t_username" class="input-field" placeholder="Login" required autocomplete="off">
+            <input id="t_password" class="input-field" placeholder="Parol" required autocomplete="new-password">
+            <div class="flex gap-3 pt-2">
+                <button type="button" id="cancelTeacherEdit" class="flex-1 bg-gray-700 hover:bg-gray-600 py-2.5 rounded-xl text-white text-sm transition-colors">Bekor qilish</button>
+                <button type="submit" class="flex-1 bg-blue-600 hover:bg-blue-500 py-2.5 rounded-xl text-white text-sm font-semibold transition-colors">Saqlash</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Student Edit Modal -->
+<div id="studentModal" class="modal-overlay hidden fixed inset-0 bg-black/70 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+    <div class="modal-box panel-card w-full max-w-md p-6">
+        <div class="flex items-center justify-between mb-5">
+            <h3 id="studentModalTitle" class="text-lg font-bold text-white">O'quvchini tahrirlash</h3>
+            <button id="closeStudentModal" class="text-gray-500 hover:text-white transition-colors text-xl leading-none">&times;</button>
+        </div>
+        <div id="studentModalError" class="hidden border rounded-xl p-3 mb-4 text-sm"></div>
+        <form id="studentForm" class="space-y-3">
+            <div class="grid grid-cols-2 gap-3">
+                <input id="s_first_name" class="input-field" placeholder="Ism">
+                <input id="s_last_name" class="input-field" placeholder="Familiya">
+            </div>
+            <div class="grid grid-cols-2 gap-3">
+                <input id="s_age" type="number" class="input-field" placeholder="Yosh">
+                <input id="s_phone" class="input-field" placeholder="Telefon">
+            </div>
+            <input id="s_school" class="input-field" placeholder="O'qish joyi">
+            <input id="s_interest" class="input-field" placeholder="Qiziqishi">
+            <input id="s_username" class="input-field" placeholder="Login" autocomplete="off">
+            <input id="s_password" class="input-field" placeholder="Parol" autocomplete="new-password">
+            <div class="flex gap-3 pt-2">
+                <button type="button" id="cancelStudentEdit" class="flex-1 bg-gray-700 hover:bg-gray-600 py-2.5 rounded-xl text-white text-sm transition-colors">Bekor qilish</button>
+                <button type="submit" class="flex-1 bg-blue-600 hover:bg-blue-500 py-2.5 rounded-xl text-white text-sm font-semibold transition-colors">Yangilash</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Club Modal -->
+<div id="clubModal" class="modal-overlay hidden fixed inset-0 bg-black/70 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+    <div class="modal-box panel-card w-full max-w-lg p-6">
+        <div class="flex items-center justify-between mb-5">
+            <h3 id="clubModalTitle" class="text-lg font-bold text-white">Yangi to'garak</h3>
+            <button id="closeClubModal" class="text-gray-500 hover:text-white transition-colors text-xl leading-none">&times;</button>
+        </div>
+        <form id="clubForm" class="space-y-3">
+            <input id="c_title" class="input-field" placeholder="To'garak sarlavhasi" required>
+            <input id="c_paragraph" class="input-field" placeholder="Qisqa tavsif" required>
+            <textarea id="c_description" class="input-field" style="min-height:90px;resize:vertical;" placeholder="To'liq tavsif" required></textarea>
+            <select id="c_teacher" class="input-field"></select>
+            <div>
+                <label class="block text-xs text-gray-500 mb-1">Rasm (PNG, JPG, GIF)</label>
+                <input id="c_image" type="file" accept="image/*" class="input-field text-sm">
+            </div>
+            <input id="c_existing_image" type="hidden">
+            <div class="flex gap-3 pt-2">
+                <button type="button" id="cancelClubEdit" class="flex-1 bg-gray-700 hover:bg-gray-600 py-2.5 rounded-xl text-white text-sm transition-colors">Bekor qilish</button>
+                <button type="submit" class="flex-1 bg-blue-600 hover:bg-blue-500 py-2.5 rounded-xl text-white text-sm font-semibold transition-colors">Saqlash</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Group Modal -->
+<div id="groupModal" class="modal-overlay hidden fixed inset-0 bg-black/70 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+    <div class="modal-box panel-card w-full max-w-md p-6">
+        <div class="flex items-center justify-between mb-5">
+            <h3 class="text-lg font-bold text-white">Yangi guruh</h3>
+            <button id="closeGroupModal" class="text-gray-500 hover:text-white transition-colors text-xl leading-none">&times;</button>
+        </div>
+        <form id="groupForm" class="space-y-3">
+            <input id="g_name" class="input-field" placeholder="Guruh nomi" required>
+            <select id="g_club" class="input-field" required></select>
+            <select id="g_teacher" class="input-field"></select>
+            <input id="g_schedule" class="input-field" placeholder="Dars jadvali (mas. Du-Chor 16:00)" required>
+            <div class="flex gap-3 pt-2">
+                <button type="button" id="cancelGroupEdit" onclick="document.getElementById('groupModal').classList.add('hidden')" class="flex-1 bg-gray-700 hover:bg-gray-600 py-2.5 rounded-xl text-white text-sm transition-colors">Bekor qilish</button>
+                <button type="submit" class="flex-1 bg-blue-600 hover:bg-blue-500 py-2.5 rounded-xl text-white text-sm font-semibold transition-colors">Saqlash</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Assign Student to Group Modal -->
+<div id="studentGroupModal" class="modal-overlay hidden fixed inset-0 bg-black/70 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+    <div class="modal-box panel-card w-full max-w-sm p-6">
+        <div class="flex items-center justify-between mb-5">
+            <h3 class="text-lg font-bold text-white">Guruhga o'quvchi biriktirish</h3>
+            <button id="closeStudentGroupModal" class="text-gray-500 hover:text-white transition-colors text-xl leading-none">&times;</button>
+        </div>
+        <input id="modalGroupId" type="hidden">
+        <select id="modalStudentSelect" class="input-field mb-4"></select>
+        <div class="flex gap-3">
+            <button id="closeStudentGroupModal2" onclick="document.getElementById('studentGroupModal').classList.add('hidden')" class="flex-1 bg-gray-700 hover:bg-gray-600 py-2.5 rounded-xl text-white text-sm transition-colors">Bekor qilish</button>
+            <button id="assignStudentBtn" class="flex-1 bg-blue-600 hover:bg-blue-500 py-2.5 rounded-xl text-white text-sm font-semibold transition-colors">Biriktirish</button>
+        </div>
+    </div>
+</div>
+
+<script type="module" src="../dist/pages/admin.js"></script>
+</body>
+</html>
