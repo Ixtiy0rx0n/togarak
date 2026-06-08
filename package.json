@@ -4,7 +4,9 @@
   "description": "Static TypeScript club management portal",
   "scripts": {
     "start": "node server.js",
-    "build": "tsc -p tsconfig.json",
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview",
     "check": "tsc --noEmit -p tsconfig.json"
   },
   "keywords": [],
@@ -15,9 +17,15 @@
     "node": ">=20"
   },
   "devDependencies": {
-    "typescript": "^6.0.3"
+    "@vitejs/plugin-react": "^6.0.2",
+    "typescript": "^6.0.3",
+    "vite": "^8.0.16"
   },
   "dependencies": {
-    "express": "^5.2.1"
+    "@types/react": "^19.2.17",
+    "@types/react-dom": "^19.2.3",
+    "express": "^5.2.1",
+    "react": "^19.2.7",
+    "react-dom": "^19.2.7"
   }
 }
