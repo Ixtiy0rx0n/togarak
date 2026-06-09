@@ -11,26 +11,66 @@ import type {
     Teacher,
     UserRole
 } from "./types.js";
+import seedData from "../../Data/seed.json";
 
 let cache: AppData | null = null;
+const LOCAL_STORE_KEY = "tugarakuz-local-store";
+
+function browserLocalStore(): Storage | null {
+    return typeof localStorage === "undefined" ? null : localStorage;
+}
+
+function seedStore(): AppData {
+    return structuredClone(seedData as AppData);
+}
+
+function loadFromLocalStorage(): AppData | null {
+    const storage = browserLocalStore();
+    const raw = storage?.getItem(LOCAL_STORE_KEY);
+    if (!raw) return null;
+
+    try {
+        return JSON.parse(raw) as AppData;
+    } catch {
+        storage?.removeItem(LOCAL_STORE_KEY);
+        return null;
+    }
+}
+
+function saveToLocalStorage(data: AppData): void {
+    browserLocalStore()?.setItem(LOCAL_STORE_KEY, JSON.stringify(data));
+}
 
 async function loadFromServer(): Promise<AppData> {
-    const response = await fetch("/api/data");
-    if (!response.ok) {
-        throw new Error("Ma'lumotlarni serverdan yuklab bo'lmadi");
+    const localData = loadFromLocalStorage();
+    if (localData) return localData;
+
+    try {
+        const response = await fetch("/api/data");
+        if (response.ok) {
+            return response.json() as Promise<AppData>;
+        }
+    } catch {
+        // Vercel static deploy has no Express API; use bundled seed data.
     }
-    return response.json() as Promise<AppData>;
+
+    const data = seedStore();
+    saveToLocalStorage(data);
+    return data;
 }
 
 async function saveToServer(data: AppData): Promise<void> {
     cache = structuredClone(data);
-    const response = await fetch("/api/data", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(data)
-    });
-    if (!response.ok) {
-        throw new Error("Ma'lumotlarni saqlashda xatolik");
+    saveToLocalStorage(data);
+
+    try {
+        await fetch("/api/data", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(data)
+        });
+    } catch {
+        // LocalStorage fallback already saved the change.
     }
 }
 
@@ -52,7 +92,8 @@ export async function updateStore(mutator: (draft: AppData) => void): Promise<Ap
 
 export async function resetStore(): Promise<AppData> {
     cache = null;
-    const data = await loadFromServer();
+    const data = seedStore();
+    saveToLocalStorage(data);
     return structuredClone(data);
 }
 
@@ -103,25 +144,41 @@ export async function getPublicSnapshot() {
 }
 
 export async function login(username: string, password: string, expectedRole?: UserRole): Promise<SessionData | null> {
+    const data = await getStore();
     const cleanUsername = cleanText(username);
     const cleanPassword = cleanText(password);
 
-    const response = await fetch("/api/login", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ username: cleanUsername, password: cleanPassword, role: expectedRole })
-    });
-
-    if (response.status === 401) {
-        return null;
+    const admin = data.admins.find((item) => sameCredential(item.username, cleanUsername) && sameCredential(item.password, cleanPassword));
+    if (admin && (!expectedRole || expectedRole === "admin")) {
+        return {
+            role: "admin",
+            userId: admin.id,
+            username: admin.username,
+            displayName: admin.displayName
+        };
     }
 
-    if (!response.ok) {
-        const payload = await response.json().catch(() => null) as { error?: string } | null;
-        throw new Error(payload?.error ?? "Login tekshirishda xatolik yuz berdi.");
+    const teacher = data.teachers.find((item) => sameCredential(item.username, cleanUsername) && sameCredential(item.password, cleanPassword));
+    if (teacher && (!expectedRole || expectedRole === "teacher")) {
+        return {
+            role: "teacher",
+            userId: teacher.id,
+            username: teacher.username,
+            displayName: `${teacher.firstName} ${teacher.lastName}`
+        };
     }
 
-    return response.json() as Promise<SessionData>;
+    const student = data.students.find((item) => sameCredential(item.username, cleanUsername) && sameCredential(item.password, cleanPassword));
+    if (student && (!expectedRole || expectedRole === "student")) {
+        return {
+            role: "student",
+            userId: student.id,
+            username: student.username,
+            displayName: `${student.firstName} ${student.lastName}`
+        };
+    }
+
+    return null;
 }
 
 export async function registerStudent(payload: Omit<Student, "id">): Promise<{ ok: boolean; message: string }> {
@@ -141,21 +198,43 @@ export async function registerStudent(payload: Omit<Student, "id">): Promise<{ o
         return { ok: false, message: "Majburiy maydonlarni to'ldiring." };
     }
 
-    const response = await fetch("/api/register", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(cleanPayload)
-    });
-
-    if (!response.ok) {
-        const errorPayload = await response.json().catch(() => null) as { error?: string } | null;
-        return { ok: false, message: errorPayload?.error ?? "Ro'yxatdan o'tishda xatolik yuz berdi." };
+    const data = await getStore();
+    const club = data.clubs.find((item) => item.id === cleanPayload.clubId);
+    if (!club) {
+        return { ok: false, message: "To'garakni tanlang." };
     }
 
-    cache = null;
+    const usernameExists = [...data.admins, ...data.teachers, ...data.students].some((item) => sameCredential(item.username, cleanPayload.username));
+    if (usernameExists) {
+        return { ok: false, message: "Bu login allaqachon band." };
+    }
 
-    const result = await response.json().catch(() => null) as { message?: string } | null;
-    return { ok: true, message: result?.message ?? "Ro'yxatdan o'tish muvaffaqiyatli yakunlandi." };
+    await updateStore((draft) => {
+        const student = {
+            ...cleanPayload,
+            id: nextId(draft.students)
+        };
+        draft.students.push(student);
+
+        let group = draft.groups.find((item) => item.clubId === club.id);
+        if (!group) {
+            group = {
+                id: nextId(draft.groups),
+                name: `${club.title} guruhi`,
+                clubId: club.id,
+                teacherId: club.teacherId ?? null,
+                schedule: "Jadval belgilanmagan",
+                studentIds: []
+            };
+            draft.groups.push(group);
+        }
+
+        if (!group.studentIds.includes(student.id)) {
+            group.studentIds.push(student.id);
+        }
+    });
+
+    return { ok: true, message: "Ro'yxatdan o'tish muvaffaqiyatli yakunlandi." };
 }
 
 export async function getAdminDashboardData() {
