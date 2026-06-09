@@ -3,8 +3,8 @@
   "version": "1.0.0",
   "description": "Static TypeScript club management portal",
   "scripts": {
-    "start": "node server.js",
-    "dev": "vite",
+    "start": "vite build && node server.js",
+    "dev": "vite --host 0.0.0.0",
     "build": "vite build",
     "preview": "vite preview",
     "check": "tsc --noEmit -p tsconfig.json"

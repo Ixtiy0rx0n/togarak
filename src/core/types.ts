@@ -25,6 +25,7 @@ export interface Student {
     phone: string;
     school?: string;
     clubInterest: string;
+    clubId?: number;
     username: string;
     password: string;
 }

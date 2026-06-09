@@ -10,7 +10,7 @@
   "teachers": [
     {
       "id": 1,
-      "firstName": "Dilshod",
+      "firstName": "Dilshod2",
       "lastName": "Karimov",
       "phone": "+998901112233",
       "subject": "Matematika",
@@ -32,7 +32,7 @@
       "id": 1,
       "firstName": "Aziz",
       "lastName": "Toshpo'latov",
-      "age": 17,
+      "age": 18,
       "phone": "+998935551122",
       "school": "1-maktab",
       "clubInterest": "Matematika",
@@ -54,7 +54,7 @@
   "clubs": [
     {
       "id": 1,
-      "title": "Matematika Ustaxonasi",
+      "title": "Matematika",
       "paragraph": "Abituriyent va olimpiachilar uchun intensiv tayyorgarlik",
       "description": "Algebra, geometriya va test strategiyalari bir kurs ichida.",
       "imagePath": "Img/1461360370896-922624d12aa1.jpg",
@@ -80,11 +80,13 @@
   "groups": [
     {
       "id": 1,
-      "name": "Matematika A",
+      "name": "Matematika 1",
       "clubId": 1,
       "teacherId": 1,
       "schedule": "Du-Chor-Juma 16:00",
-      "studentIds": [1]
+      "studentIds": [
+        1
+      ]
     },
     {
       "id": 2,
@@ -92,10 +94,19 @@
       "clubId": 2,
       "teacherId": 2,
       "schedule": "Seshanba-Payshanba 15:00",
-      "studentIds": [2]
+      "studentIds": [
+        2
+      ]
     }
   ],
   "lessons": [
+    {
+      "id": 3,
+      "groupId": 1,
+      "title": "vectorlar",
+      "videoUrl": "https://youtu.be/EVY3AijYinc?si=79GeIRhjRpMeVwBt",
+      "createdAt": "2026-06-09T17:01:09.911Z"
+    },
     {
       "id": 1,
       "groupId": 1,
@@ -112,6 +123,16 @@
     }
   ],
   "assignments": [
+    {
+      "lessonId": 1,
+      "title": "20 ta misol ishlash",
+      "description": "kitobdan misol",
+      "deadline": "2026-06-10T10:10",
+      "fileName": "",
+      "fileDataUrl": "",
+      "id": 2,
+      "createdAt": "2026-06-09T17:02:04.313Z"
+    },
     {
       "id": 1,
       "lessonId": 1,

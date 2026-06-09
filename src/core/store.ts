@@ -60,6 +60,14 @@ function nextId(items: Array<{ id: number }>): number {
     return items.reduce((max, item) => Math.max(max, item.id), 0) + 1;
 }
 
+function cleanText(value: string): string {
+    return value.trim();
+}
+
+function sameCredential(left: string, right: string): boolean {
+    return cleanText(left) === cleanText(right);
+}
+
 function teacherName(teacher?: Teacher): string {
     return teacher ? `${teacher.firstName} ${teacher.lastName}` : "Biriktirilmagan";
 }
@@ -95,59 +103,59 @@ export async function getPublicSnapshot() {
 }
 
 export async function login(username: string, password: string, expectedRole?: UserRole): Promise<SessionData | null> {
-    const data = await getStore();
+    const cleanUsername = cleanText(username);
+    const cleanPassword = cleanText(password);
 
-    const admin = data.admins.find((item) => item.username === username && item.password === password);
-    if (admin && (!expectedRole || expectedRole === "admin")) {
-        return {
-            role: "admin",
-            userId: admin.id,
-            username: admin.username,
-            displayName: admin.displayName
-        };
+    const response = await fetch("/api/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ username: cleanUsername, password: cleanPassword, role: expectedRole })
+    });
+
+    if (response.status === 401) {
+        return null;
     }
 
-    const teacher = data.teachers.find((item) => item.username === username && item.password === password);
-    if (teacher && (!expectedRole || expectedRole === "teacher")) {
-        return {
-            role: "teacher",
-            userId: teacher.id,
-            username: teacher.username,
-            displayName: `${teacher.firstName} ${teacher.lastName}`
-        };
+    if (!response.ok) {
+        const payload = await response.json().catch(() => null) as { error?: string } | null;
+        throw new Error(payload?.error ?? "Login tekshirishda xatolik yuz berdi.");
     }
 
-    const student = data.students.find((item) => item.username === username && item.password === password);
-    if (student && (!expectedRole || expectedRole === "student")) {
-        return {
-            role: "student",
-            userId: student.id,
-            username: student.username,
-            displayName: `${student.firstName} ${student.lastName}`
-        };
-    }
-
-    return null;
+    return response.json() as Promise<SessionData>;
 }
 
 export async function registerStudent(payload: Omit<Student, "id">): Promise<{ ok: boolean; message: string }> {
-    const data = await getStore();
-    const usernameExists = data.students.some((item) => item.username === payload.username)
-        || data.teachers.some((item) => item.username === payload.username)
-        || data.admins.some((item) => item.username === payload.username);
+    const cleanPayload = {
+        ...payload,
+        firstName: cleanText(payload.firstName),
+        lastName: cleanText(payload.lastName),
+        phone: cleanText(payload.phone),
+        school: cleanText(payload.school ?? ""),
+        clubInterest: cleanText(payload.clubInterest),
+        clubId: payload.clubId,
+        username: cleanText(payload.username),
+        password: cleanText(payload.password)
+    };
 
-    if (usernameExists) {
-        return { ok: false, message: "Bu login allaqachon band." };
+    if (!cleanPayload.firstName || !cleanPayload.lastName || !cleanPayload.phone || !cleanPayload.clubInterest || !cleanPayload.clubId || !cleanPayload.username || !cleanPayload.password) {
+        return { ok: false, message: "Majburiy maydonlarni to'ldiring." };
     }
 
-    await updateStore((draft) => {
-        draft.students.push({
-            ...payload,
-            id: nextId(draft.students)
-        });
+    const response = await fetch("/api/register", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(cleanPayload)
     });
 
-    return { ok: true, message: "Ro'yxatdan o'tish muvaffaqiyatli yakunlandi." };
+    if (!response.ok) {
+        const errorPayload = await response.json().catch(() => null) as { error?: string } | null;
+        return { ok: false, message: errorPayload?.error ?? "Ro'yxatdan o'tishda xatolik yuz berdi." };
+    }
+
+    cache = null;
+
+    const result = await response.json().catch(() => null) as { message?: string } | null;
+    return { ok: true, message: result?.message ?? "Ro'yxatdan o'tish muvaffaqiyatli yakunlandi." };
 }
 
 export async function getAdminDashboardData() {
@@ -156,6 +164,9 @@ export async function getAdminDashboardData() {
         admins: data.admins,
         teachers: data.teachers,
         students: data.students,
+        lessons: data.lessons,
+        assignments: data.assignments,
+        submissions: data.submissions,
         clubs: data.clubs.map((club) => clubView(data, club)),
         groups: data.groups.map((group) => {
             const club = data.clubs.find((item) => item.id === group.clubId);
@@ -191,6 +202,34 @@ export async function createAdmin(username: string, password: string, displayNam
     });
 
     return { ok: true, message: "Admin qo'shildi." };
+}
+
+export async function updateAdmin(adminId: number, username: string, password: string, displayName: string): Promise<{ ok: boolean; message: string }> {
+    const cleanUsername = cleanText(username);
+    const cleanPassword = cleanText(password);
+    const cleanDisplayName = cleanText(displayName);
+
+    if (!cleanUsername || !cleanPassword || !cleanDisplayName) {
+        return { ok: false, message: "Ism, login va parol majburiy." };
+    }
+
+    const data = await getStore();
+    const exists = data.admins.some((item) => item.username === cleanUsername && item.id !== adminId)
+        || data.teachers.some((item) => item.username === cleanUsername)
+        || data.students.some((item) => item.username === cleanUsername);
+    if (exists) {
+        return { ok: false, message: "Bu login allaqachon mavjud." };
+    }
+
+    await updateStore((draft) => {
+        const target = draft.admins.find((item) => item.id === adminId);
+        if (!target) return;
+        target.username = cleanUsername;
+        target.password = cleanPassword;
+        target.displayName = cleanDisplayName;
+    });
+
+    return { ok: true, message: "Admin yangilandi." };
 }
 
 export async function deleteAdmin(adminId: number): Promise<void> {
@@ -260,6 +299,10 @@ export async function updateStudent(studentId: number, payload: Omit<Student, "i
     });
 
     return { ok: true, message: "O'quvchi yangilandi." };
+}
+
+export async function createStudent(payload: Omit<Student, "id">): Promise<{ ok: boolean; message: string }> {
+    return registerStudent(payload);
 }
 
 export async function deleteStudent(studentId: number): Promise<void> {
