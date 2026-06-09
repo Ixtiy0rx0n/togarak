@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "description": "Static TypeScript club management portal",
   "scripts": {
-    "start": "vite build && node server.js",
+    "start": "node server.js",
     "dev": "vite --host 0.0.0.0",
     "build": "vite build",
     "preview": "vite preview",
@@ -14,7 +14,7 @@
   "license": "ISC",
   "type": "module",
   "engines": {
-    "node": ">=20"
+    "node": "20.x"
   },
   "devDependencies": {
     "@vitejs/plugin-react": "^6.0.2",
