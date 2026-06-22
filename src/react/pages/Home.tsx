@@ -68,7 +68,7 @@ const Home = ({ setPage }: { setPage: (page: string) => void }) => {
                                 Guliston davlat pedagogika instituti to'garaklari
                             </span>
                             <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold mb-6 leading-tight tracking-tight text-white max-w-4xl">
-                                GDPI talabalari uchun <br className="hidden md:block" />
+                                To'garak talabalari uchun <br className="hidden md:block" />
                                 <span className="text-blue-500">ijod, fan va kasb mahorati maydoni</span>
                             </h1>
                             <p className="text-lg text-gray-400 mb-10 max-w-2xl font-light leading-relaxed">
