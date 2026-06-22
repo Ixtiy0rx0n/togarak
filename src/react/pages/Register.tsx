@@ -97,7 +97,7 @@ export default function Register({ setPage, goBack }: RegisterProps) {
             <div className="bg-[#0d1520] border border-gray-800 rounded-2xl w-full max-w-md p-8 shadow-2xl">
                 <button type="button" onClick={goBack} className="text-sm text-gray-500 hover:text-white mb-6">Orqaga</button>
                 <div className="text-center mb-8">
-                    <img src="/logo.png" className="w-16 h-16 object-contain bg-white rounded-full p-1.5 mx-auto mb-4" alt="Logo" />
+                    <img src="/logo.jpg" className="w-16 h-16 object-contain bg-white rounded-full p-1.5 mx-auto mb-4" alt="Logo" />
                     <h1 className="text-2xl font-bold text-white">GDPI to'garagiga yozilish</h1>
                     <p className="text-gray-500 text-sm mt-1">Yo'nalishni tanlang, tizim sizni avtomatik mos guruhga biriktiradi.</p>
                 </div>

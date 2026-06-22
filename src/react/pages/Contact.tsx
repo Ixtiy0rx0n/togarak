@@ -5,7 +5,7 @@ export default function Contact({ setPage, goBack }: { setPage: (page: string) =
                 <div className="flex items-center gap-4">
                     <button onClick={goBack} className="rounded-xl border border-gray-800 px-3 py-2 text-sm text-gray-400 hover:text-white hover:bg-gray-800">Orqaga</button>
                     <button onClick={() => setPage("home")} className="flex items-center gap-3">
-                        <img src="/logo.png" className="w-10 h-10 rounded-full bg-white p-1" alt="GDPI" />
+                        <img src="/logo.jpg" className="w-10 h-10 rounded-full bg-white p-1" alt="GDPI" />
                         <span className="text-white font-bold">Aloqa</span>
                     </button>
                 </div>

@@ -27,7 +27,7 @@ const Home = ({ setPage }: { setPage: (page: string) => void }) => {
             <aside className="w-64 bg-[#0d1520] border-r border-gray-800 hidden md:flex flex-col shrink-0 z-10">
                 <div className="p-6 border-b border-gray-800">
                     <div className="flex items-center gap-3 group cursor-pointer" onClick={() => setPage('home')}>
-                        <img src="/logo.png" alt="GDPI" className="w-12 h-12 object-contain bg-white rounded-full p-1 shadow-lg shadow-blue-900/30 group-hover:scale-105 transition-transform" />
+                        <img src="/logo.jpg" alt="GDPI" className="w-12 h-12 object-contain bg-white rounded-full p-1 shadow-lg shadow-blue-900/30 group-hover:scale-105 transition-transform" />
                         <span className="text-xl font-bold text-white tracking-tight">GDPI To'garak</span>
                     </div>
                 </div>
@@ -49,7 +49,7 @@ const Home = ({ setPage }: { setPage: (page: string) => void }) => {
                 <header className="md:hidden bg-[#0d1520] border-b border-gray-800 sticky top-0 z-20">
                     <div className="px-6 py-4 flex justify-between items-center">
                         <div className="flex items-center gap-3 cursor-pointer" onClick={() => setPage('home')}>
-                            <img src="/logo.png" alt="GDPI" className="w-9 h-9 object-contain bg-white rounded-full p-0.5 shadow-sm" />
+                            <img src="/logo.jpg" alt="GDPI" className="w-9 h-9 object-contain bg-white rounded-full p-0.5 shadow-sm" />
                             <span className="text-lg font-bold text-white">GDPI To'garak</span>
                         </div>
                         <div className="flex items-center gap-3">

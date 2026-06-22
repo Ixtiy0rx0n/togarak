@@ -66,7 +66,7 @@ export default function Login({ setPage, goBack, initialRole = "student" }: Logi
                     Orqaga
                 </button>
 
-                <img src="/logo.png" className="w-16 h-16 object-contain bg-white rounded-full p-1.5 mx-auto mb-4" alt="Logo" />
+                <img src="/logo.jpg" className="w-16 h-16 object-contain bg-white rounded-full p-1.5 mx-auto mb-4" alt="Logo" />
                 <h1 className="text-2xl font-bold text-white text-center">Tizimga kirish</h1>
                 <p className="text-center text-sm text-gray-500 mt-2 mb-6">{roleHints[role]}</p>
 

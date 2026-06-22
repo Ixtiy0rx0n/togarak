@@ -141,7 +141,7 @@ const AdminPanel = ({ setPage, goBack }: { setPage: (page: string) => void; goBa
                     title: formData.title,
                     paragraph: formData.paragraph,
                     description: formData.description,
-                    imagePath: formData.imagePath || '/logo.png',
+                    imagePath: formData.imagePath || '/logo.jpg',
                     teacherId: formData.teacherId ? Number(formData.teacherId) : null
                 });
             } else if (modal.type === 'group') {
@@ -168,7 +168,7 @@ const AdminPanel = ({ setPage, goBack }: { setPage: (page: string) => void; goBa
             {/* Sidebar */}
             <aside className="w-64 bg-[#0d1520] border-r border-gray-800 flex flex-col shrink-0">
                 <div className="p-5 border-b border-gray-800 flex items-center gap-3">
-                    <img src="/logo.png" className="w-9 h-9 rounded-full bg-white p-1" alt="Logo" />
+                    <img src="/logo.jpg" className="w-9 h-9 rounded-full bg-white p-1" alt="Logo" />
                     <span className="text-lg font-bold text-white">Tugarak.uz</span>
                 </div>
                 <nav className="flex-1 p-3 space-y-1">
